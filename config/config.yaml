@@ -1,0 +1,70 @@
+# ── Video Input ──
+video:
+  source: "data/sample_video.mp4"   # Path or 0 for webcam
+  frame_skip: 1                      # 1 = process EVERY frame (slow: OCR on
+                                     #   CPU runs per plate per frame — fine
+                                     #   for short clips; use 2+ for long ones)
+  use_tracker: true                  # CSRT box propagation on skipped frames
+  resize_width: null                 # null = native resolution (OCR gets full-
+  resize_height: null                #   detail crops; YOLO letterboxes internally
+                                     #   so inference cost is unchanged)
+
+# ── YOLO Detection ──
+detection:
+  model_path: "models/best.pt"
+  confidence_threshold: 0.5
+  device: "0"                        # GPU device ID
+
+# ── OCR ──
+ocr:
+  engine: "easyocr"
+  languages: ["en"]
+  gpu: false                         # CPU mode — CRITICAL for local 6GB VRAM
+  confidence_threshold: 0.4
+
+# ── Preprocessing ──
+# Tuned empirically for EasyOCR: binarization and grayscale both DEGRADE
+# EasyOCR accuracy vs natural 3-channel crops — 'MH 20 EJ 0364' read as
+# 'JHH' (binarized) vs '4 JEJ0364' (raw + upscale).
+preprocess:
+  grayscale: false
+  bilateral_filter:
+    d: 11
+    sigma_color: 17
+    sigma_space: 17
+  adaptive_threshold: false
+  resize_height: 100                # upscale small plate crops for OCR
+
+# ── Post-Processing ──
+postprocess:
+  plate_regex: '^[A-Z]{2}\s?\d{2}\s?[A-Z]{1,3}\s?\d{1,4}$'
+  dedup_window_seconds: 3.0
+  consensus: true                       # track plates across frames; log the
+  consensus_iou: 0.3                    #   highest-confidence valid reading
+  consensus_max_age_seconds: 2.0        #   once per emit window per plate
+  consensus_emit_seconds: 3.0
+  positional_correction: true           # fix digit/letter confusions against
+                                        #   the SS DD LL NNNN layout (max 1 fix)
+
+# ── Training (for Colab — not used locally) ──
+training:
+  model_base: "yolov8s.pt"          # Small model (trainable on Colab T4 16GB)
+  epochs: 80
+  batch_size: 16                     # Colab T4 can handle this
+  img_size: 640
+  amp: true
+  patience: 10
+  optimizer: "SGD"
+  lr0: 0.01
+  data_yaml: "data/raw/License Plate Detection/data.yaml"
+
+# ── Output ──
+output:
+  log_path: "outputs/logs/detections.csv"
+  save_annotated_frames: true
+  visualization_dir: "outputs/visualizations"
+
+# ── Dashboard ──
+dashboard:
+  port: 8501
+  refresh_interval_seconds: 2

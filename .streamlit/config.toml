@@ -1,0 +1,7 @@
+# Streamlit UI theme — light, minimal, per the project design spec
+[theme]
+base = "light"
+primaryColor = "#4a90d9"
+
+[server]
+headless = true

@@ -1,0 +1,35 @@
+# ── Data & models (large / user-supplied) ──
+data/raw/
+data/*.mp4
+*.pt
+outputs/
+
+# ── Credentials ──
+kaggle.json
+.env
+
+# ── Python ──
+__pycache__/
+*.pyc
+*.egg-info/
+.eggs/
+dist/
+build/
+*.egg
+
+# ── Environments ──
+venv/
+.venv/
+
+# ── IDE ──
+.vscode/
+.idea/
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+
+# ── Dataset zips & YOLO training runs ──
+*.zip
+runs/
+.pytest_cache/
